@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Attendance System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2196F3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        .employee-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .employee-list li {
+            margin: 10px 0;
+        }
+        .employee-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .employee-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        .form-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .form-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        input[type="text"], select, input[type="time"], input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus, select:focus, input[type="time"]:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        input[readonly] {
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+        .conditional-field {
+            display: none;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+            background: none;
+            border: none;
+        }
+        .close-btn:hover {
+            color: #666;
+        }
+        .message {
+            display: none;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 300;
+        }
+        .location-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .location-error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Office Attendance</h1>
+        <button id="adminLoginBtn" class="employee-btn" style="margin-bottom: 20px;">Admin Login</button>
+        <ul class="employee-list" id="employeeList">
+            <!-- Employees will be loaded dynamically -->
+        </ul>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="container" id="adminPanel" style="display: none;">
+        <h1>Admin Panel</h1>
+        <button id="backToMainBtn" class="employee-btn" style="margin-bottom: 20px;">Back to Attendance</button>
+        <div class="form-group">
+            <label for="newEmployeeName">Add New Employee:</label>
+            <input type="text" id="newEmployeeName" placeholder="Enter employee name">
+            <button id="addEmployeeBtn" class="employee-btn" style="margin-top: 10px;">Add Employee</button>
+        </div>
+        <h2>Current Employees</h2>
+        <ul id="adminEmployeeList">
+            <!-- Employees will be loaded here -->
+        </ul>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="form-container" id="loginModal">
+        <div class="form-content">
+            <button class="close-btn" id="loginCloseBtn">&times;</button>
+            <h2 class="form-title">Admin Login</h2>
+            <div class="form-group">
+                <label for="adminEmail">Email:</label>
+                <input type="email" id="adminEmail" placeholder="Enter admin email" required>
+            </div>
+            <button id="loginBtn" class="employee-btn">Login</button>
+            <div id="loginError" class="message error" style="display: none;">Invalid email. Access denied.</div>
+        </div>
+    </div>
+
+    <div class="form-container" id="formContainer">
+        <div class="form-content">
+            <button class="close-btn" id="closeBtn">&times;</button>
+            <h2 class="form-title">Mark Attendance</h2>
+            <form id="attendanceForm">
+                <div class="form-group">
+                    <label for="employeeName">Name:</label>
+                    <input type="text" id="employeeName" name="name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="attendanceType">Attendance Type:</label>
+                    <select id="attendanceType" name="attendanceType" required>
+                        <option value="">Select Type</option>
+                        <option value="Morning">Morning (Arrived)</option>
+                        <option value="Evening">Evening (Leaving)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div id="locationInfo" class="location-info">Fetching location...</div>
+                    <input type="hidden" id="location" name="location">
+                </div>
+                <div class="form-group conditional-field" id="inTimeGroup">
+                    <label for="inTime">In Time:</label>
+                    <input type="time" id="inTime" name="inTime">
+                </div>
+                <div class="form-group conditional-field" id="photoGroup">
+                    <label for="photo">Photo:</label>
+                    <input type="file" id="photo" name="photo" accept="image/*">
+                </div>
+                <div class="form-group conditional-field" id="outTimeGroup">
+                    <label for="outTime">Out Time:</label>
+                    <input type="time" id="outTime" name="outTime">
+                </div>
+                <button type="submit">Submit Attendance</button>
+            </form>
+            <div id="successMessage" class="message success">Attendance marked successfully!</div>
+            <div id="errorMessage" class="message error">Error submitting attendance. Please try again.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzO7rNTWndbx660honMlUcu-ZR1hd3PG4n1mlibP-FNkj3irk8If9MI0Fovui-Zd20iDg/exec';
+
+        // Elements
+        const mainContainer = document.querySelector('.container');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginModal = document.getElementById('loginModal');
+        const formContainer = document.getElementById('formContainer');
+        const employeeList = document.getElementById('employeeList');
+        const adminEmployeeList = document.getElementById('adminEmployeeList');
+        const attendanceForm = document.getElementById('attendanceForm');
+        const employeeNameInput = document.getElementById('employeeName');
+        const attendanceTypeSelect = document.getElementById('attendanceType');
+        const inTimeGroup = document.getElementById('inTimeGroup');
+        const photoGroup = document.getElementById('photoGroup');
+        const outTimeGroup = document.getElementById('outTimeGroup');
+        const closeBtn = document.getElementById('closeBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Load employees on page load
+        document.addEventListener('DOMContentLoaded', loadEmployees);
+
+        // Admin login
+        document.getElementById('adminLoginBtn').addEventListener('click', () => {
+            loginModal.style.display = 'flex';
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('adminEmail').value;
+            if (email === 'yunifyhritsolutions@gmail.com') {
+                loginModal.style.display = 'none';
+                mainContainer.style.display = 'none';
+                adminPanel.style.display = 'block';
+                loadAdminEmployees();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        document.getElementById('loginCloseBtn').addEventListener('click', () => {
+            loginModal.style.display = 'none';
+        });
+
+        // Back to main
+        document.getElementById('backToMainBtn').addEventListener('click', () => {
+            adminPanel.style.display = 'none';
+            mainContainer.style.display = 'block';
+            loadEmployees();
+        });
+
+        // Add employee
+        document.getElementById('addEmployeeBtn').addEventListener('click', async () => {
+            const name = document.getElementById('newEmployeeName').value.trim();
+            if (!name) return alert('Enter a name');
+            const btn = document.getElementById('addEmployeeBtn');
+            btn.textContent = 'Submitting...';
+            btn.disabled = true;
+            try {
+                const formData = new FormData();
+                formData.append('action', 'addEmployee');
+                formData.append('name', name);
+                const response = await fetch(API_URL, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('newEmployeeName').value = '';
+                    loadAdminEmployees();
+                    loadEmployees(); // Update main list
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error adding employee');
+            }
+            btn.textContent = 'Add Employee';
+            btn.disabled = false;
+        });
+
+        // Load employees for main page
+        async function loadEmployees() {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'getEmployees');
+                const response = await fetch(API_URL, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    employeeList.innerHTML = '';
+                    result.employees.forEach(name => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<button class="employee-btn" data-name="${name}">${name}</button>`;
+                        employeeList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading employees');
+            }
+        }
+
+        // Load employees for admin panel
+        async function loadAdminEmployees() {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'getEmployees');
+                const response = await fetch(API_URL, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    adminEmployeeList.innerHTML = '';
+                    result.employees.forEach(name => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${name}</span> <button class="employee-btn remove-btn" data-name="${name}" style="width: auto; padding: 5px 10px; margin-left: 10px;">Remove</button>`;
+                        adminEmployeeList.appendChild(li);
+                    });
+                    // Add remove listeners
+                    document.querySelectorAll('.remove-btn').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const name = e.target.getAttribute('data-name');
+                            if (confirm(`Remove ${name}?`)) {
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('action', 'removeEmployee');
+                                    formData.append('name', name);
+                                    const response = await fetch(API_URL, { method: 'POST', body: formData });
+                                    const result = await response.json();
+                                    if (result.success) {
+                                        loadAdminEmployees();
+                                        loadEmployees();
+                                    } else {
+                                        alert('Error: ' + result.message);
+                                    }
+                                } catch (error) {
+                                    alert('Error removing employee');
+                                }
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading admin employees');
+            }
+        }
+
+        // Show form when employee name is clicked
+        employeeList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('employee-btn')) {
+                const name = e.target.getAttribute('data-name');
+                formContainer.style.display = 'flex';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                // Reset form
+                attendanceForm.reset();
+                // Set employee name after reset
+                employeeNameInput.value = name;
+                // Hide all conditional fields
+                inTimeGroup.style.display = 'none';
+                photoGroup.style.display = 'none';
+                outTimeGroup.style.display = 'none';
+                // Remove required attributes
+                document.getElementById('inTime').required = false;
+                document.getElementById('photo').required = false;
+                document.getElementById('outTime').required = false;
+                // Fetch location
+                fetchLocation();
+            }
+        });
+
+        // Function to fetch location
+        async function fetchLocation() {
+            const locationInfo = document.getElementById('locationInfo');
+            const locationInput = document.getElementById('location');
+            const submitBtn = document.querySelector('#attendanceForm button[type="submit"]');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                        const data = await response.json();
+                        const address = data.display_name || `${lat}, ${lng}`;
+                        locationInput.value = address;
+                        locationInfo.textContent = `Location: ${address}`;
+
+                        // Check if location is Alakhnanda Complex, MP Nagar, Bhopal
+                        if (address.toLowerCase().includes('alakhnanda complex') || address.toLowerCase().includes('mp nagar') || address.toLowerCase().includes('bhopal')) {
+                            locationInfo.classList.remove('location-error');
+                            submitBtn.disabled = false;
+                        } else {
+                            locationInfo.textContent = 'You are not at the allowed location (Alakhnanda Complex, MP Nagar, Bhopal).';
+                            locationInfo.classList.add('location-error');
+                            submitBtn.disabled = true;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching address:', error);
+                        locationInfo.textContent = 'Error fetching location';
+                        locationInfo.classList.add('location-error');
+                        submitBtn.disabled = true;
+                    }
+                }, (error) => {
+                    console.error('Geolocation error:', error);
+                    locationInfo.textContent = 'Location access denied or unavailable';
+                    locationInfo.classList.add('location-error');
+                    submitBtn.disabled = true;
+                });
+            } else {
+                locationInfo.textContent = 'Geolocation not supported';
+                locationInfo.classList.add('location-error');
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Handle attendance type change
+        attendanceTypeSelect.addEventListener('change', () => {
+            const type = attendanceTypeSelect.value;
+            // Hide all conditional fields first
+            inTimeGroup.style.display = 'none';
+            photoGroup.style.display = 'none';
+            outTimeGroup.style.display = 'none';
+            // Remove required attributes
+            document.getElementById('inTime').required = false;
+            document.getElementById('photo').required = false;
+            document.getElementById('outTime').required = false;
+
+            if (type === 'Morning') {
+                inTimeGroup.style.display = 'block';
+                photoGroup.style.display = 'block';
+                document.getElementById('inTime').required = true;
+                document.getElementById('photo').required = true;
+                // Auto-set inTime to current time
+                const now = new Date();
+                const timeString = now.toTimeString().slice(0, 5); // HH:MM
+                document.getElementById('inTime').value = timeString;
+                document.getElementById('inTime').readOnly = true;
+            } else if (type === 'Evening') {
+                outTimeGroup.style.display = 'block';
+                document.getElementById('outTime').required = true;
+                // Auto-set outTime to current time
+                const now = new Date();
+                const timeString = now.toTimeString().slice(0, 5); // HH:MM
+                document.getElementById('outTime').value = timeString;
+                document.getElementById('outTime').readOnly = true;
+            }
+        });
+
+        // Close form
+        closeBtn.addEventListener('click', () => {
+            formContainer.style.display = 'none';
+        });
+
+        // Handle form submission
+        attendanceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(attendanceForm);
+            formData.append('action', 'submitAttendance');
+            const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            formData.append('date', currentDate);
+
+            const submitBtn = document.querySelector('#attendanceForm button[type="submit"]');
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            // Convert photo to base64 if present
+            const photoInput = document.getElementById('photo');
+            if (photoInput.files[0]) {
+                const file = photoInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64 = event.target.result.split(',')[1]; // Remove data:image/jpeg;base64,
+                    formData.append('photo', base64);
+                    submitAttendance(formData, submitBtn);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                submitAttendance(formData, submitBtn);
+            }
+        });
+
+        async function submitAttendance(formData, submitBtn) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    attendanceForm.reset();
+                    setTimeout(() => {
+                        formContainer.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+            }
+            submitBtn.textContent = 'Submit Attendance';
+            submitBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
