@@ -259,7 +259,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbznEo4H2F__LH9vt7UEByrBwwUzOqt4T4DH25KUv7lU1LwkkhF_l6BCB0m5Bte1rWPKoQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyORyxkGP_elo601_J6Skq6Yagbdq1s7K0EHg1yGFlB-ggfizWKDLiEQR9qkGdOdMZi9g/exec';
 
         // Elements
         const mainContainer = document.querySelector('.container');
@@ -583,6 +583,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 successMessage.style.display = 'none';
+                errorMessage.textContent = error.message || 'Error submitting attendance. Please try again.';
                 errorMessage.style.display = 'block';
             }
             submitBtn.textContent = 'Submit Attendance';
