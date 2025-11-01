@@ -254,7 +254,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxtmXet2RrSsKxVPuGkATj2KBmKODGYI8J1e83XTP9QErv2zYfPOf1cQ1k8PFNzvjyLWA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbznEo4H2F__LH9vt7UEByrBwwUzOqt4T4DH25KUv7lU1LwkkhF_l6BCB0m5Bte1rWPKoQ/exec';
 
         // Elements
         const mainContainer = document.querySelector('.container');
@@ -422,7 +422,6 @@
         async function fetchLocation() {
             const locationInfo = document.getElementById('locationInfo');
             const locationInput = document.getElementById('location');
-            const submitBtn = document.querySelector('#attendanceForm button[type="submit"]');
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (position) => {
@@ -439,28 +438,23 @@
                         // Check if location is Alakhnanda Complex, MP Nagar, Bhopal
                         if (address.toLowerCase().includes('alakhnanda complex') || address.toLowerCase().includes('mp nagar') || address.toLowerCase().includes('bhopal')) {
                             locationInfo.classList.remove('location-error');
-                            submitBtn.disabled = false;
                         } else {
                             locationInfo.textContent = 'You are not at the allowed location (Alakhnanda Complex, MP Nagar, Bhopal).';
                             locationInfo.classList.add('location-error');
-                            submitBtn.disabled = true;
                         }
                     } catch (error) {
                         console.error('Error fetching address:', error);
                         locationInfo.textContent = 'Error fetching location';
                         locationInfo.classList.add('location-error');
-                        submitBtn.disabled = true;
                     }
                 }, (error) => {
                     console.error('Geolocation error:', error);
                     locationInfo.textContent = 'Location access denied or unavailable';
                     locationInfo.classList.add('location-error');
-                    submitBtn.disabled = true;
                 });
             } else {
                 locationInfo.textContent = 'Geolocation not supported';
                 locationInfo.classList.add('location-error');
-                submitBtn.disabled = true;
             }
         }
 
